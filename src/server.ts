@@ -5,10 +5,11 @@ import fastifyCors from "@fastify/cors";
 const main = async () => {
   const prisma = new PrismaClient();
   const server = Fastify({ logger: true });
+  const port = process.env.PORT || 4001;
 
-  // Register the CORS plugin
+  // Register the CORS plugin with wildcard for any origin (Not good for prod)
   await server.register(fastifyCors, {
-    origin: "http://localhost:3000", // Allow only this origin
+    origin: true, // Allows any origin
     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
   });
 
@@ -32,7 +33,7 @@ const main = async () => {
   });
 
   try {
-    await server.listen({ port: 4001 });
+    await server.listen({ port: Number(port), host: '0.0.0.0' });
   } catch (err) {
     console.error(err);
     await prisma.$disconnect();
