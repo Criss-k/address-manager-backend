@@ -1,26 +1,50 @@
 import { PrismaClient } from "@prisma/client";
-import Fastify from "fastify";
+import Fastify, { FastifyRequest, FastifyReply } from "fastify";
 import fastifyCors from "@fastify/cors";
+
+interface AddressQuery {
+  cursor?: string;
+  pageSize?: string;
+}
+
+interface DeleteParams {
+  id: string;
+}
 
 const main = async () => {
   const prisma = new PrismaClient();
   const server = Fastify({ logger: true });
   const port = process.env.PORT || 4001;
 
-  // Register the CORS plugin with wildcard for any origin (Not good for prod)
+  // Register the CORS plugin with wildcard for any origin
   await server.register(fastifyCors, {
     origin: true, // Allows any origin
     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
   });
 
-  // Fetch all addresses
-  server.get("/addresses", async (_request) => {
-    const addresses = await prisma.address.findMany();
-    return { addresses };
+  // Fetch all addresses with cursor-based pagination
+  server.get("/addresses", async (request: FastifyRequest<{ Querystring: AddressQuery }>, reply: FastifyReply) => {
+    const { cursor, pageSize = "10" } = request.query;
+    const take = parseInt(pageSize, 10);
+
+    const addresses = await prisma.address.findMany({
+      take: take + 1, // Fetch one more to check if there's a next page
+      ...(cursor ? { skip: 1, cursor: { id: parseInt(cursor, 10) } } : {}),
+      orderBy: { id: "asc" },
+    });
+
+    const hasNextPage = addresses.length > take;
+    if (hasNextPage) {
+      addresses.pop(); // Remove the extra item
+    }
+
+    const nextCursor = hasNextPage ? addresses[addresses.length - 1]?.id : null;
+
+    reply.send({ addresses, nextCursor, hasNextPage });
   });
 
   // Delete an address by ID
-  server.delete<{Params: { id: string }}>("/addresses/:id", async (request, reply) => {
+  server.delete("/addresses/:id", async (request: FastifyRequest<{ Params: DeleteParams }>, reply: FastifyReply) => {
     const { id } = request.params;
     try {
       await prisma.address.delete({
@@ -33,7 +57,7 @@ const main = async () => {
   });
 
   try {
-    await server.listen({ port: Number(port), host: '0.0.0.0' });
+    await server.listen({ port: Number(port) });
   } catch (err) {
     console.error(err);
     await prisma.$disconnect();
