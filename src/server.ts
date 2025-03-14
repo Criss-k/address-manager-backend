@@ -57,7 +57,7 @@ const main = async () => {
   });
 
   try {
-    await server.listen({ port: Number(port) });
+    await server.listen({ port: Number(port), host: '0.0.0.0' });
   } catch (err) {
     console.error(err);
     await prisma.$disconnect();
