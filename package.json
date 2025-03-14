@@ -7,10 +7,16 @@
   },
   "type": "module",
   "scripts": {
-    "be": "node --experimental-strip-types --watch src/server.ts"
+    "install:all": "pnpm install",
+    "prisma:generate": "pnpm prisma generate",
+    "prisma:migrate": "pnpm prisma migrate dev",
+    "prisma:seed": "pnpm prisma db seed",
+    "setup:dev": "pnpm run prisma:generate && pnpm run prisma:migrate && pnpm run prisma:seed",
+    "start:dev": "node --experimental-strip-types --watch src/server.ts"
   },
   "author": "Crown Road Software",
   "dependencies": {
+    "@fastify/cors": "^11.0.0",
     "@prisma/client": "^6.2.1",
     "fastify": "^5.2.1"
   },
