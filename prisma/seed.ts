@@ -4,7 +4,7 @@ import casual from "casual";
 const prisma = new PrismaClient();
 
 async function main() {
-  for (let id = 1; id < 20; id++) {
+  for (let id = 1; id < 50; id++) {
     await prisma.address.upsert({
       create: {
         id,
