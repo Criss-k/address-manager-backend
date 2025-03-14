@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import Fastify, { FastifyRequest, FastifyReply } from "fastify";
+import Fastify from "fastify";
 import fastifyCors from "@fastify/cors";
 
 interface AddressQuery {
@@ -23,8 +23,8 @@ const main = async () => {
   });
 
   // Fetch all addresses with cursor-based pagination
-  server.get("/addresses", async (request: FastifyRequest<{ Querystring: AddressQuery }>, reply: FastifyReply) => {
-    const { cursor, pageSize = "10" } = request.query;
+  server.get("/addresses", async (request, reply) => {
+    const { cursor, pageSize = "10" } = request.query as AddressQuery;
     const take = parseInt(pageSize, 10);
 
     const addresses = await prisma.address.findMany({
@@ -44,8 +44,8 @@ const main = async () => {
   });
 
   // Delete an address by ID
-  server.delete("/addresses/:id", async (request: FastifyRequest<{ Params: DeleteParams }>, reply: FastifyReply) => {
-    const { id } = request.params;
+  server.delete("/addresses/:id", async (request, reply) => {
+    const { id } = request.params as DeleteParams;
     try {
       await prisma.address.delete({
         where: { id: parseInt(id, 10) },
