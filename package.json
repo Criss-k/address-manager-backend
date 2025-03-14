@@ -8,10 +8,11 @@
   "type": "module",
   "scripts": {
     "install:all": "pnpm install",
+    "prisma:install": "pnpm add prisma",
     "prisma:generate": "pnpm prisma generate",
     "prisma:migrate": "pnpm prisma migrate dev",
     "prisma:seed": "pnpm prisma db seed",
-    "setup:dev": "pnpm run prisma:generate && pnpm run prisma:migrate && pnpm run prisma:seed",
+    "setup:dev": "pnpm run install:all && pnpm run prisma:install && pnpm run prisma:generate && pnpm run prisma:migrate && pnpm run prisma:seed",
     "start:dev": "node --experimental-strip-types --watch src/server.ts"
   },
   "author": "Crown Road Software",
